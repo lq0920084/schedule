@@ -13,4 +13,6 @@ public interface ScheduleService {
     ScheduleResponseDTO findScheduleById(Long id);
 
     ScheduleResponseDTO reWriteScheduleById(Long id,String name,String contents,String password);
+
+    void deleteScheduleById(Long id,String password);
 }

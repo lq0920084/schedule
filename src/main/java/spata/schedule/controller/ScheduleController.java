@@ -44,4 +44,11 @@ public List<ScheduleResponseDTO> findAllSchedule(@RequestParam(value="name",requ
 
         return new ResponseEntity<>(scheduleService.reWriteScheduleById(id,dto.getName(),dto.getContents(),dto.getPassword()),HttpStatus.OK);
 }
+
+@DeleteMapping("/schedule/{id}")
+    public ResponseEntity<Void> deleteScheduleById(@PathVariable Long id,
+                                                                  @RequestBody ScheduleRequestDTO dto){
+    scheduleService.deleteScheduleById(id,dto.getPassword());
+        return new ResponseEntity<>(HttpStatus.OK);
+}
 }

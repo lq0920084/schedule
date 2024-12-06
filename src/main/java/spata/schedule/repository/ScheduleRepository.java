@@ -14,4 +14,5 @@ public interface ScheduleRepository {
     List<Schedule> findScheduleByDate(String date);
     List<Schedule> findScheduleByNameAndDate(String name,String date);
     int reWriteScheduleById(Long id,String name, String Contents);
+    void deleteScheduleById(Long id);
 }

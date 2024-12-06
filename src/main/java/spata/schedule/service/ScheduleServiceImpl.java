@@ -57,11 +57,20 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     public ScheduleResponseDTO reWriteScheduleById(Long id, String name, String contents, String password) {
         if(passwordValidation(password,id)){
-            int result = scheduleRepository.reWriteScheduleById(id,name,contents);
+            scheduleRepository.reWriteScheduleById(id,name,contents);
                return findScheduleById(id);
         }else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"does not matched password");
         }
+    }
+
+    @Override
+    public void deleteScheduleById(Long id,String password) {
+       if(passwordValidation(password,id)){
+           scheduleRepository.deleteScheduleById(id);
+       }else {
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"does not matched password");
+       }
     }
 
     //패스워드를 암호화하는 부분은 일정 생성 시 뿐만 아니라 수정과 삭제시에도 사용될 수 있으므로, 별개의 메서드로 분리합니다.

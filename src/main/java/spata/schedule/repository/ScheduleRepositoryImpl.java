@@ -71,9 +71,14 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
 
     @Override
     public int reWriteScheduleById(Long id, String name, String Contents) {
-        return jdbcTemplate.update("UPDATE schedule SET name=?,contents=? WHERE id=? ",name,Contents,id);
+        Timestamp nowDateAndTime = Timestamp.valueOf(LocalDateTime.now());
+        return jdbcTemplate.update("UPDATE schedule SET name=?,contents=?,modify_timestamp=? WHERE id=? ",name,Contents,nowDateAndTime,id);
     }
 
+    @Override
+    public void deleteScheduleById(Long id){
+        jdbcTemplate.update("DELETE FROM schedule WHERE id=?",id);
+    }
 
     private RowMapper<Schedule> scheduleFindRowMapper(){
 
