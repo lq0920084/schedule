@@ -33,4 +33,9 @@ public List<ScheduleResponseDTO> findAllSchedule(@RequestParam(value="name",requ
         return scheduleService.findAllSchedule(name,date);
 }
 
+@GetMapping("/schedule/{id}")
+    public ResponseEntity<ScheduleResponseDTO> findScheduleById(@PathVariable Long id){
+        return new ResponseEntity<>(scheduleService.findScheduleById(id),HttpStatus.OK);
+}
+
 }

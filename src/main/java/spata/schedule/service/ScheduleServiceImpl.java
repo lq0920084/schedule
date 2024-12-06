@@ -48,6 +48,9 @@ public class ScheduleServiceImpl implements ScheduleService {
         }
     }
 
+    public ScheduleResponseDTO findScheduleById(Long id){
+            return scheduleRepository.findScheduleById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"does not Exist id="+id));
+    }
 
     //패스워드를 암호화하는 부분은 일정 생성 시 뿐만 아니라 수정과 삭제시에도 사용될 수 있으므로, 별개의 메서드로 분리합니다.
     private String encryptPassword(String password){
