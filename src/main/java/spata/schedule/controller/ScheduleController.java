@@ -38,4 +38,10 @@ public List<ScheduleResponseDTO> findAllSchedule(@RequestParam(value="name",requ
         return new ResponseEntity<>(scheduleService.findScheduleById(id),HttpStatus.OK);
 }
 
+@PutMapping("/schedule/{id}")
+    public ResponseEntity<ScheduleResponseDTO> reWriteScheduleById(@PathVariable Long id,
+                                                                   @RequestBody ScheduleRequestDTO dto){
+
+        return new ResponseEntity<>(scheduleService.reWriteScheduleById(id,dto.getName(),dto.getContents(),dto.getPassword()),HttpStatus.OK);
+}
 }

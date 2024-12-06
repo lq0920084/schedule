@@ -5,12 +5,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import spata.schedule.dto.ScheduleResponseDTO;
+import spata.schedule.entity.Schedule;
 import spata.schedule.repository.ScheduleRepository;
 
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,26 +32,36 @@ public class ScheduleServiceImpl implements ScheduleService {
         if(password==null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Create Failed, Input Data error");
         }
-        return scheduleRepository.createSchedule(name,contents,encryptedPassword).orElseThrow(() ->  new ResponseStatusException(HttpStatus.BAD_REQUEST,"Create Failed, Input Data error"));
+        return ScheduleToDTO(scheduleRepository.createSchedule(name,contents,encryptedPassword).orElseThrow(() ->  new ResponseStatusException(HttpStatus.BAD_REQUEST,"Create Failed, Input Data error")));
     }
 
     @Override
     public List<ScheduleResponseDTO> findAllSchedule(String name,String date){
         if(name==null&&date==null){
-            return scheduleRepository.findAllSchedule();
+            return  scheduleListToDTO(scheduleRepository.findAllSchedule());
         }else if(date==null){
-            return scheduleRepository.findScheduleByName(name);
+            return scheduleListToDTO(scheduleRepository.findScheduleByName(name));
 
         }else if(name==null){
-            return scheduleRepository.findScheduleByDate(date);
+            return scheduleListToDTO(scheduleRepository.findScheduleByDate(date));
         }
         else {
-            return scheduleRepository.findScheduleByNameAndDate(name,date);
+            return scheduleListToDTO(scheduleRepository.findScheduleByNameAndDate(name,date));
         }
     }
 
     public ScheduleResponseDTO findScheduleById(Long id){
-            return scheduleRepository.findScheduleById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"does not Exist id="+id));
+            return ScheduleToDTO(scheduleRepository.findScheduleById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"does not Exist id="+id)));
+    }
+
+    @Override
+    public ScheduleResponseDTO reWriteScheduleById(Long id, String name, String contents, String password) {
+        if(passwordValidation(password,id)){
+            int result = scheduleRepository.reWriteScheduleById(id,name,contents);
+               return findScheduleById(id);
+        }else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"does not matched password");
+        }
     }
 
     //패스워드를 암호화하는 부분은 일정 생성 시 뿐만 아니라 수정과 삭제시에도 사용될 수 있으므로, 별개의 메서드로 분리합니다.
@@ -64,4 +76,35 @@ public class ScheduleServiceImpl implements ScheduleService {
             throw new RuntimeException(e);
         }
     }
+
+    //비밀번호를 제외한 데이터를 출력하기 위해 전체 리스트에서 비밀번호를 뺀 나머지를 반환합니다.
+    private List<ScheduleResponseDTO> scheduleListToDTO(List<Schedule>  original){
+        List<ScheduleResponseDTO>  destination =new ArrayList<ScheduleResponseDTO>();
+        for(Schedule source : original){
+            destination.add(new ScheduleResponseDTO(source.getId(),
+                                                    source.getName(),
+                                                    source.getContents(),
+                                                    source.getCreate_timestamp(),
+                                                    source.getModify_timestamp()));
+        }
+        return destination;
+    }
+
+    //비밀번호를 제외한 데이터를 출력하기 위해 전체 값에서 비밀번호를 뺀 나머지를 반환합니다.
+    private ScheduleResponseDTO ScheduleToDTO(Schedule original){
+         return new ScheduleResponseDTO(original.getId(),
+                                        original.getName(),
+                                        original.getContents(),
+                                        original.getCreate_timestamp(),
+                                        original.getModify_timestamp());
+    }
+
+
+    private boolean passwordValidation(String password,Long id){
+        String savedPassword = scheduleRepository.findScheduleById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"does not Exist id="+id))
+                .getPassword();
+        return encryptPassword(password).equals(savedPassword);
+    }
+
 }

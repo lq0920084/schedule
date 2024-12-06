@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import spata.schedule.dto.ScheduleResponseDTO;
+import spata.schedule.entity.Schedule;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -25,7 +26,7 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
     }
 
     @Override
-    public Optional<ScheduleResponseDTO> createSchedule(String name, String contents, String password) {
+    public Optional<Schedule> createSchedule(String name, String contents, String password) {
         SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(jdbcTemplate);
         jdbcInsert.withTableName("schedule").usingGeneratedKeyColumns("id");
         Map<String,Object> parameters = new HashMap<>();
@@ -43,43 +44,49 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
     }
 
 
-    public Optional<ScheduleResponseDTO> findScheduleById(Long id){
-        List<ScheduleResponseDTO> result = jdbcTemplate.query("SELECT id,name,contents,create_timestamp,modify_timestamp FROM schedule where id=?", scheduleFindRowMapper(), id);
+    public Optional<Schedule> findScheduleById(Long id){
+        List<Schedule> result = jdbcTemplate.query("SELECT * FROM schedule where id=?", scheduleFindRowMapper(), id);
         return result.stream().findAny();
     }
 
     @Override
-    public List<ScheduleResponseDTO> findAllSchedule() {
-        return jdbcTemplate.query("SELECT id,name,contents,create_timestamp,modify_timestamp FROM schedule ORDER BY modify_timestamp DESC", scheduleFindRowMapper());
+    public List<Schedule> findAllSchedule() {
+        return jdbcTemplate.query("SELECT * FROM schedule ORDER BY modify_timestamp DESC", scheduleFindRowMapper());
     }
 
     @Override
-    public List<ScheduleResponseDTO> findScheduleByName(String name) {
-        return jdbcTemplate.query("SELECT id,name,contents,create_timestamp,modify_timestamp FROM schedule WHERE name=? ORDER BY modify_timestamp DESC",scheduleFindRowMapper(),name);
+    public List<Schedule> findScheduleByName(String name) {
+        return jdbcTemplate.query("SELECT * FROM schedule WHERE name=? ORDER BY modify_timestamp DESC",scheduleFindRowMapper(),name);
     }
 
     @Override
-    public List<ScheduleResponseDTO> findScheduleByDate(String date) {
-        return jdbcTemplate.query("SELECT id,name,contents,create_timestamp,modify_timestamp FROM schedule WHERE Date(modify_timestamp)=? ORDER BY modify_timestamp DESC",scheduleFindRowMapper(),date);
+    public List<Schedule> findScheduleByDate(String date) {
+        return jdbcTemplate.query("SELECT * FROM schedule WHERE Date(modify_timestamp)=? ORDER BY modify_timestamp DESC",scheduleFindRowMapper(),date);
     }
 
     @Override
-    public List<ScheduleResponseDTO> findScheduleByNameAndDate(String name, String date) {
-        return jdbcTemplate.query("SELECT id,name,contents,create_timestamp,modify_timestamp FROM schedule WHERE name=? AND Date(modify_timestamp)=? ORDER BY modify_timestamp DESC",scheduleFindRowMapper(),name,date);
+    public List<Schedule> findScheduleByNameAndDate(String name, String date) {
+        return jdbcTemplate.query("SELECT * FROM schedule WHERE name=? AND Date(modify_timestamp)=? ORDER BY modify_timestamp DESC",scheduleFindRowMapper(),name,date);
+    }
+
+    @Override
+    public int reWriteScheduleById(Long id, String name, String Contents) {
+        return jdbcTemplate.update("UPDATE schedule SET name=?,contents=? WHERE id=? ",name,Contents,id);
     }
 
 
-    private RowMapper<ScheduleResponseDTO> scheduleFindRowMapper(){
+    private RowMapper<Schedule> scheduleFindRowMapper(){
 
-        return new RowMapper<ScheduleResponseDTO> (){
+        return new RowMapper<Schedule> (){
 
             @Override
-            public ScheduleResponseDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
+            public Schedule mapRow(ResultSet rs, int rowNum) throws SQLException {
 
-                return new ScheduleResponseDTO(
+                return new Schedule(
                         rs.getLong("id"),
                         rs.getString("name"),
                         rs.getString("contents"),
+                        rs.getString("password"),
                         rs.getTimestamp("create_timestamp").toString(),
                         rs.getTimestamp("modify_timestamp").toString());
             }

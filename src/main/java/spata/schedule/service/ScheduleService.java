@@ -11,4 +11,6 @@ public interface ScheduleService {
     List<ScheduleResponseDTO> findAllSchedule(String name,String date);
 
     ScheduleResponseDTO findScheduleById(Long id);
+
+    ScheduleResponseDTO reWriteScheduleById(Long id,String name,String contents,String password);
 }
