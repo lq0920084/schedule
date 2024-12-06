@@ -25,7 +25,7 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
     }
 
     @Override
-    public Optional<ScheduleResponseDTO> create_schedule(String name, String contents, String password) {
+    public Optional<ScheduleResponseDTO> createSchedule(String name, String contents, String password) {
         SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(jdbcTemplate);
         jdbcInsert.withTableName("schedule").usingGeneratedKeyColumns("id");
         Map<String,Object> parameters = new HashMap<>();
@@ -44,23 +44,50 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
 
 
     public Optional<ScheduleResponseDTO> findScheduleById(Long id){
-        List<ScheduleResponseDTO> result = jdbcTemplate.query("SELECT * FROM schedule where id=?", scheduleRowMapper(), id);
+        List<ScheduleResponseDTO> result = jdbcTemplate.query("SELECT id,name,contents,create_timestamp,modify_timestamp FROM schedule where id=?", scheduleFindRowMapper(), id);
         return result.stream().findAny();
     }
 
-    private RowMapper<ScheduleResponseDTO> scheduleRowMapper(){
+    @Override
+    public List<ScheduleResponseDTO> findAllSchedule() {
+        return jdbcTemplate.query("SELECT id,name,contents,create_timestamp,modify_timestamp FROM schedule ORDER BY modify_timestamp DESC", scheduleFindRowMapper());
+    }
 
-    return new RowMapper<ScheduleResponseDTO> (){
+    @Override
+    public List<ScheduleResponseDTO> findScheduleByName(String name) {
+        return jdbcTemplate.query("SELECT id,name,contents,create_timestamp,modify_timestamp FROM schedule WHERE name=? ORDER BY modify_timestamp DESC",scheduleFindRowMapper(),name);
+    }
 
-        @Override
-        public ScheduleResponseDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
+    @Override
+    public List<ScheduleResponseDTO> findScheduleByDate(String date) {
+        return jdbcTemplate.query("SELECT id,name,contents,create_timestamp,modify_timestamp FROM schedule WHERE Date(modify_timestamp)=? ORDER BY modify_timestamp DESC",scheduleFindRowMapper(),date);
+    }
 
-            return new ScheduleResponseDTO(rs.getLong("id"),rs.getString("name"),rs.getString("contents"),rs.getString("password"),rs.getTimestamp("create_timestamp").toString(),rs.getTimestamp("modify_timestamp").toString());
-        }
+    @Override
+    public List<ScheduleResponseDTO> findScheduleByNameAndDate(String name, String date) {
+        return jdbcTemplate.query("SELECT id,name,contents,create_timestamp,modify_timestamp FROM schedule WHERE name=? AND Date(modify_timestamp)=? ORDER BY modify_timestamp DESC",scheduleFindRowMapper(),name,date);
+    }
+
+
+    private RowMapper<ScheduleResponseDTO> scheduleFindRowMapper(){
+
+        return new RowMapper<ScheduleResponseDTO> (){
+
+            @Override
+            public ScheduleResponseDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
+
+                return new ScheduleResponseDTO(
+                        rs.getLong("id"),
+                        rs.getString("name"),
+                        rs.getString("contents"),
+                        rs.getTimestamp("create_timestamp").toString(),
+                        rs.getTimestamp("modify_timestamp").toString());
+            }
 
 
         };
-        }}
+    }
+}
 
 
 

@@ -11,6 +11,7 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 @Service
 public class ScheduleServiceImpl implements ScheduleService {
@@ -24,12 +25,27 @@ public class ScheduleServiceImpl implements ScheduleService {
     //스케줄 생성 기능 구현.
     @Transactional
     @Override
-    public ScheduleResponseDTO create_schedule(String name, String contents, String password) {
+    public ScheduleResponseDTO createSchedule(String name, String contents, String password) {
         String encryptedPassword = encryptPassword(password);
         if(password==null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Create Failed, Input Data error");
         }
-        return scheduleRepository.create_schedule(name,contents,encryptedPassword).orElseThrow(() ->  new ResponseStatusException(HttpStatus.BAD_REQUEST,"Create Failed, Input Data error"));
+        return scheduleRepository.createSchedule(name,contents,encryptedPassword).orElseThrow(() ->  new ResponseStatusException(HttpStatus.BAD_REQUEST,"Create Failed, Input Data error"));
+    }
+
+    @Override
+    public List<ScheduleResponseDTO> findAllSchedule(String name,String date){
+        if(name==null&&date==null){
+            return scheduleRepository.findAllSchedule();
+        }else if(date==null){
+            return scheduleRepository.findScheduleByName(name);
+
+        }else if(name==null){
+            return scheduleRepository.findScheduleByDate(date);
+        }
+        else {
+            return scheduleRepository.findScheduleByNameAndDate(name,date);
+        }
     }
 
 

@@ -8,16 +8,20 @@ import lombok.Getter;
 public class ScheduleResponseDTO {
     Long id;
     String name;
-    String content;
-    String password;
+    String contents;
     String create_timestamp;
     String modify_timestamp;
 
-    public ScheduleResponseDTO(String name,
-                               String contents,
-                               String password){
-        this.name = name;
-        this.content = contents;
-        this.password = password;
-    }
+//    public ScheduleResponseDTO(Long id,
+//                               String name,
+//                               String contents,
+//                               String create_timestamp,
+//                               String modify_timestamp){
+//        this.id = id;
+//        this.name =name;
+//        this.contents = contents;
+//        this.create_timestamp = create_timestamp;
+//        this.modify_timestamp = modify_timestamp;
+//    }
+
 }
