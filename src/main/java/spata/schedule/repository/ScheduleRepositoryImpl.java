@@ -27,9 +27,18 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
 
     @Override
     public Optional<Schedule> createSchedule(String userid,String name,String contents,String password,String email) {
+        SimpleJdbcInsert jdbcInsertSchedule = new SimpleJdbcInsert(jdbcTemplate);
+        jdbcInsertSchedule.withTableName("schedule").usingGeneratedKeyColumns("id");
+        Map<String,Object> parameters = new HashMap<>();
+        parameters.clear();
+        parameters.put("userid",userid);
+        parameters.put("contents",contents);
+        parameters.put("password",password);
+        Number key = jdbcInsertSchedule.executeAndReturnKey(new MapSqlParameterSource(parameters));
+
         SimpleJdbcInsert jdbcInsertUser = new SimpleJdbcInsert(jdbcTemplate);
         jdbcInsertUser.withTableName("user");
-        Map<String,Object> parameters = new HashMap<>();
+
         parameters.put("userid",userid);
         parameters.put("name",name);
         parameters.put("email",email);
@@ -38,13 +47,7 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
         parameters.put("modify_timeStamp",nowDateAndTime);
         jdbcInsertUser.execute(new MapSqlParameterSource(parameters));
 
-        SimpleJdbcInsert jdbcInsertSchedule = new SimpleJdbcInsert(jdbcTemplate);
-        jdbcInsertSchedule.withTableName("schedule").usingGeneratedKeyColumns("id");
-        parameters.clear();
-        parameters.put("userid",userid);
-        parameters.put("contents",contents);
-        parameters.put("password",password);
-        Number key = jdbcInsertSchedule.executeAndReturnKey(new MapSqlParameterSource(parameters));
+
 
 
 
