@@ -27,12 +27,12 @@ public class ScheduleServiceImpl implements ScheduleService {
     //스케줄 생성 기능 구현.
     @Transactional
     @Override
-    public ScheduleResponseDTO createSchedule(String name, String contents, String password) {
+    public ScheduleResponseDTO createSchedule(String userid,String name, String contents, String password,String email) {
         String encryptedPassword = encryptPassword(password);
         if(password==null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Create Failed, Input Data error");
         }
-        return ScheduleToDTO(scheduleRepository.createSchedule(name,contents,encryptedPassword).orElseThrow(() ->  new ResponseStatusException(HttpStatus.BAD_REQUEST,"Create Failed, Input Data error")));
+        return ScheduleToDTO(scheduleRepository.createSchedule(userid,name,contents,encryptedPassword,email).orElseThrow(() ->  new ResponseStatusException(HttpStatus.BAD_REQUEST,"Create Failed, Input Data error")));
     }
 
     @Override
@@ -91,8 +91,10 @@ public class ScheduleServiceImpl implements ScheduleService {
         List<ScheduleResponseDTO>  destination =new ArrayList<ScheduleResponseDTO>();
         for(Schedule source : original){
             destination.add(new ScheduleResponseDTO(source.getId(),
+                                                    source.getUserid(),
                                                     source.getName(),
                                                     source.getContents(),
+                                                    source.getEmail(),
                                                     source.getCreate_timestamp(),
                                                     source.getModify_timestamp()));
         }
@@ -102,8 +104,10 @@ public class ScheduleServiceImpl implements ScheduleService {
     //비밀번호를 제외한 데이터를 출력하기 위해 전체 값에서 비밀번호를 뺀 나머지를 반환합니다.
     private ScheduleResponseDTO ScheduleToDTO(Schedule original){
          return new ScheduleResponseDTO(original.getId(),
+                                        original.getUserid(),
                                         original.getName(),
                                         original.getContents(),
+                                        original.getEmail(),
                                         original.getCreate_timestamp(),
                                         original.getModify_timestamp());
     }

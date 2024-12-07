@@ -26,18 +26,27 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
     }
 
     @Override
-    public Optional<Schedule> createSchedule(String name, String contents, String password) {
-        SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(jdbcTemplate);
-        jdbcInsert.withTableName("schedule").usingGeneratedKeyColumns("id");
+    public Optional<Schedule> createSchedule(String userid,String name,String contents,String password,String email) {
+        SimpleJdbcInsert jdbcInsertUser = new SimpleJdbcInsert(jdbcTemplate);
+        jdbcInsertUser.withTableName("user");
         Map<String,Object> parameters = new HashMap<>();
+        parameters.put("userid",userid);
         parameters.put("name",name);
-        parameters.put("contents",contents);
-        parameters.put("password",password);
-
+        parameters.put("email",email);
         Timestamp nowDateAndTime = Timestamp.valueOf(LocalDateTime.now());
         parameters.put("create_timestamp",nowDateAndTime);
         parameters.put("modify_timeStamp",nowDateAndTime);
-        Number key = jdbcInsert.executeAndReturnKey(new MapSqlParameterSource(parameters));
+        jdbcInsertUser.execute(new MapSqlParameterSource(parameters));
+
+        SimpleJdbcInsert jdbcInsertSchedule = new SimpleJdbcInsert(jdbcTemplate);
+        jdbcInsertSchedule.withTableName("schedule").usingGeneratedKeyColumns("id");
+        parameters.clear();
+        parameters.put("userid",userid);
+        parameters.put("contents",contents);
+        parameters.put("password",password);
+        Number key = jdbcInsertSchedule.executeAndReturnKey(new MapSqlParameterSource(parameters));
+
+
 
         //제대로 저장되었능지를 조회하기 위해 findScheduleById메서드를 후출하여 리턴받습니다.
         return findScheduleById(key.longValue());
@@ -45,28 +54,28 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
 
 
     public Optional<Schedule> findScheduleById(Long id){
-        List<Schedule> result = jdbcTemplate.query("SELECT * FROM schedule where id=?", scheduleFindRowMapper(), id);
+        List<Schedule> result = jdbcTemplate.query("SELECT * FROM schedule s JOIN user u ON s.userid=u.userid where s.id=?", scheduleFindRowMapper(), id);
         return result.stream().findAny();
     }
 
     @Override
     public List<Schedule> findAllSchedule() {
-        return jdbcTemplate.query("SELECT * FROM schedule ORDER BY modify_timestamp DESC", scheduleFindRowMapper());
+        return jdbcTemplate.query("SELECT * FROM schedule s JOIN user u ON s.userid=u.userid ORDER BY modify_timestamp DESC", scheduleFindRowMapper());
     }
 
     @Override
     public List<Schedule> findScheduleByName(String name) {
-        return jdbcTemplate.query("SELECT * FROM schedule WHERE name=? ORDER BY modify_timestamp DESC",scheduleFindRowMapper(),name);
+        return jdbcTemplate.query("SELECT * FROM schedule s JOIN user u ON s.userid=u.userid WHERE s.name=? ORDER BY u.modify_timestamp DESC",scheduleFindRowMapper(),name);
     }
 
     @Override
     public List<Schedule> findScheduleByDate(String date) {
-        return jdbcTemplate.query("SELECT * FROM schedule WHERE Date(modify_timestamp)=? ORDER BY modify_timestamp DESC",scheduleFindRowMapper(),date);
+        return jdbcTemplate.query("SELECT * FROM schedule s JOIN user u ON s.userid=u.userid WHERE Date(u.modify_timestamp)=? ORDER BY u.modify_timestamp DESC",scheduleFindRowMapper(),date);
     }
 
     @Override
     public List<Schedule> findScheduleByNameAndDate(String name, String date) {
-        return jdbcTemplate.query("SELECT * FROM schedule WHERE name=? AND Date(modify_timestamp)=? ORDER BY modify_timestamp DESC",scheduleFindRowMapper(),name,date);
+        return jdbcTemplate.query("SELECT * FROM schedule s JOIN user u ON s.userid=u.userid WHERE u.name=? AND Date(u.modify_timestamp)=? ORDER BY u.modify_timestamp DESC",scheduleFindRowMapper(),name,date);
     }
 
     @Override
@@ -89,9 +98,11 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
 
                 return new Schedule(
                         rs.getLong("id"),
+                        rs.getString("s.userid"),
                         rs.getString("name"),
                         rs.getString("contents"),
                         rs.getString("password"),
+                        rs.getString("email"),
                         rs.getTimestamp("create_timestamp").toString(),
                         rs.getTimestamp("modify_timestamp").toString());
             }

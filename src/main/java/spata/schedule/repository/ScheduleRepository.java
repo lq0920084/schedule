@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ScheduleRepository {
-    Optional<Schedule> createSchedule(String name,String contents,String password);
+    Optional<Schedule> createSchedule(String userid,String name,String contents,String password,String email);
     Optional<Schedule> findScheduleById(Long id);
     List<Schedule> findAllSchedule();
     List<Schedule>  findScheduleByName(String name);
