@@ -1,10 +1,12 @@
 package spata.schedule.repository;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.server.ResponseStatusException;
 import spata.schedule.dto.ScheduleResponseDTO;
 import spata.schedule.entity.Schedule;
 
@@ -81,7 +83,13 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
     @Override
     public int reWriteScheduleById(Long id, String name, String Contents) {
         Timestamp nowDateAndTime = Timestamp.valueOf(LocalDateTime.now());
-        return jdbcTemplate.update("UPDATE schedule SET name=?,contents=?,modify_timestamp=? WHERE id=? ",name,Contents,nowDateAndTime,id);
+        int stable = jdbcTemplate.update("UPDATE user SET name=?,modify_timestamp=? WHERE id=? ",name,nowDateAndTime,id);
+        int utable = jdbcTemplate.update("UPDATE schedule SET contents=? WHERE id=? ",Contents,id);
+        if(stable==utable){
+            return stable;
+        }else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"modify failed");
+        }
     }
 
     @Override
