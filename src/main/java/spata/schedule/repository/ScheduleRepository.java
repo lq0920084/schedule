@@ -10,9 +10,9 @@ public interface ScheduleRepository {
     Optional<Schedule> createSchedule(String userid,String name,String contents,String password,String email);
     Optional<Schedule> findScheduleById(Long id);
     List<Schedule> findAllSchedule();
-    List<Schedule>  findScheduleByName(String name);
+    List<Schedule>  findScheduleByUserid(String userid);
     List<Schedule> findScheduleByDate(String date);
-    List<Schedule> findScheduleByNameAndDate(String name,String date);
+    List<Schedule> findScheduleByUseridAndDate(String userid,String date);
     int reWriteScheduleById(Long id,String name, String Contents);
     void deleteScheduleById(Long id);
 }

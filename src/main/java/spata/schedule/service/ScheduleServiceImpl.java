@@ -36,17 +36,17 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
-    public List<ScheduleResponseDTO> findAllSchedule(String name,String date){
-        if(name==null&&date==null){
+    public List<ScheduleResponseDTO> findAllSchedule(String userid,String date){
+        if(userid==null&&date==null){
             return  scheduleListToDTO(scheduleRepository.findAllSchedule());
         }else if(date==null){
-            return scheduleListToDTO(scheduleRepository.findScheduleByName(name));
+            return scheduleListToDTO(scheduleRepository.findScheduleByUserid(userid));
 
-        }else if(name==null){
+        }else if(userid==null){
             return scheduleListToDTO(scheduleRepository.findScheduleByDate(date));
         }
         else {
-            return scheduleListToDTO(scheduleRepository.findScheduleByNameAndDate(name,date));
+            return scheduleListToDTO(scheduleRepository.findScheduleByUseridAndDate(userid,date));
         }
     }
 

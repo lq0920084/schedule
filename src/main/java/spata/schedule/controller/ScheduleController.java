@@ -25,12 +25,12 @@ public ResponseEntity<ScheduleResponseDTO> createSchedule(@RequestBody ScheduleR
 }
 
 @GetMapping("/schedule")
-public List<ScheduleResponseDTO> findAllSchedule(@RequestParam(value="name",required=false)String name,
+public List<ScheduleResponseDTO> findAllSchedule(@RequestParam(value="userid",required=false)String userid,
                                                  @RequestParam(value="date",required=false) String date){
 
 
 
-        return scheduleService.findAllSchedule(name,date);
+        return scheduleService.findAllSchedule(userid,date);
 }
 
 @GetMapping("/schedule/{id}")

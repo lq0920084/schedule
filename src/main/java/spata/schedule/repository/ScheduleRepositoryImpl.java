@@ -37,7 +37,7 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
         Number key = jdbcInsertSchedule.executeAndReturnKey(new MapSqlParameterSource(parameters));
 
         SimpleJdbcInsert jdbcInsertUser = new SimpleJdbcInsert(jdbcTemplate);
-        jdbcInsertUser.withTableName("user");
+        jdbcInsertUser.withTableName("user").usingGeneratedKeyColumns("id");
 
         parameters.put("userid",userid);
         parameters.put("name",name);
@@ -48,37 +48,34 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
         jdbcInsertUser.execute(new MapSqlParameterSource(parameters));
 
 
-
-
-
         //제대로 저장되었능지를 조회하기 위해 findScheduleById메서드를 후출하여 리턴받습니다.
         return findScheduleById(key.longValue());
     }
 
 
     public Optional<Schedule> findScheduleById(Long id){
-        List<Schedule> result = jdbcTemplate.query("SELECT * FROM schedule s JOIN user u ON s.userid=u.userid where s.id=?", scheduleFindRowMapper(), id);
+        List<Schedule> result = jdbcTemplate.query("SELECT * FROM schedule s JOIN user u ON s.id=u.id where s.id=?", scheduleFindRowMapper(), id);
         return result.stream().findAny();
     }
 
     @Override
     public List<Schedule> findAllSchedule() {
-        return jdbcTemplate.query("SELECT * FROM schedule s JOIN user u ON s.userid=u.userid ORDER BY modify_timestamp DESC", scheduleFindRowMapper());
+        return jdbcTemplate.query("SELECT * FROM schedule s JOIN user u ON s.id=u.id ORDER BY modify_timestamp DESC", scheduleFindRowMapper());
     }
 
     @Override
-    public List<Schedule> findScheduleByName(String name) {
-        return jdbcTemplate.query("SELECT * FROM schedule s JOIN user u ON s.userid=u.userid WHERE s.name=? ORDER BY u.modify_timestamp DESC",scheduleFindRowMapper(),name);
+    public List<Schedule> findScheduleByUserid(String userid) {
+        return jdbcTemplate.query("SELECT * FROM schedule s JOIN user u ON s.id=u.id WHERE s.userid=? ORDER BY u.modify_timestamp DESC",scheduleFindRowMapper(),userid);
     }
 
     @Override
     public List<Schedule> findScheduleByDate(String date) {
-        return jdbcTemplate.query("SELECT * FROM schedule s JOIN user u ON s.userid=u.userid WHERE Date(u.modify_timestamp)=? ORDER BY u.modify_timestamp DESC",scheduleFindRowMapper(),date);
+        return jdbcTemplate.query("SELECT * FROM schedule s JOIN user u ON s.id=u.id WHERE Date(u.modify_timestamp)=? ORDER BY u.modify_timestamp DESC",scheduleFindRowMapper(),date);
     }
 
     @Override
-    public List<Schedule> findScheduleByNameAndDate(String name, String date) {
-        return jdbcTemplate.query("SELECT * FROM schedule s JOIN user u ON s.userid=u.userid WHERE u.name=? AND Date(u.modify_timestamp)=? ORDER BY u.modify_timestamp DESC",scheduleFindRowMapper(),name,date);
+    public List<Schedule> findScheduleByUseridAndDate(String userid, String date) {
+        return jdbcTemplate.query("SELECT * FROM schedule s JOIN user u ON s.id=u.id WHERE s.userid=? AND Date(u.modify_timestamp)=? ORDER BY u.modify_timestamp DESC",scheduleFindRowMapper(),userid,date);
     }
 
     @Override
